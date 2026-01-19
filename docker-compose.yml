@@ -1,0 +1,51 @@
+# =====================================================
+# Notification Service - Docker Compose
+# =====================================================
+#
+# Yêu cầu:
+#   - Infrastructure phải đang chạy (hrm-deployment/docker-compose.infra.yml)
+#
+# Chạy service:
+#   docker compose up -d --build
+#
+# Xem logs:
+#   docker compose logs -f
+#
+# Dừng service:
+#   docker compose down
+#
+# =====================================================
+
+services:
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hrm-notification-service
+    restart: unless-stopped
+    env_file:
+      - ../hrm-deployment/.env
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: ${NOTIFICATION_DB_CONNECTION}
+      RabbitMQ__Host: ${RABBITMQ_HOST}
+      RabbitMQ__Port: ${RABBITMQ_PORT}
+      RabbitMQ__Username: ${RABBITMQ_USER}
+      RabbitMQ__Password: ${RABBITMQ_PASSWORD}
+      Keycloak__Authority: ${KEYCLOAK_AUTHORITY}
+      Keycloak__Audience: hrm-api
+      Keycloak__RequireHttps: "false"
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-5005}:8080"
+    networks:
+      - hrm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  hrm-network:
+    external: true

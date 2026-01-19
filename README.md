@@ -173,15 +173,15 @@ await connection.start();
 
 | Method | Endpoint | Mô tả | Auth |
 |--------|----------|-------|------|
-| `GET` | `/api/notifications` | Danh sách thông báo | Required |
-| `GET` | `/api/notifications/unread` | Thông báo chưa đọc | Required |
-| `GET` | `/api/notifications/count` | Số lượng chưa đọc | Required |
+| `GET` | `/api/notifications` | Danh sách thông báo (có phân trang) | Required |
 | `POST` | `/api/notifications/{id}/read` | Đánh dấu đã đọc | Required |
-| `POST` | `/api/notifications/read-all` | Đọc tất cả | Required |
-| `POST` | `/api/notifications/{id}/archive` | Lưu trữ | Required |
-| `GET` | `/api/notifications/preferences` | Preferences | Required |
-| `PUT` | `/api/notifications/preferences` | Update preferences | Required |
-| `GET` | `/api/notifications/templates` | Templates | Admin |
+| `POST` | `/api/notifications/read-all` | Đánh dấu tất cả đã đọc | Required |
+| `DELETE` | `/api/notifications/{id}` | Xóa thông báo | Required |
+
+**Query Parameters cho GET /api/notifications:**
+- `unreadOnly` (bool): Chỉ lấy thông báo chưa đọc
+- `page` (int): Trang hiện tại (mặc định: 1)
+- `pageSize` (int): Số item/trang (mặc định: 20)
 
 ### Response Examples
 

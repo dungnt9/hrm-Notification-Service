@@ -109,6 +109,29 @@ public class NotificationsController : ControllerBase
         return Ok();
     }
 
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var notification = await _context.Notifications
+            .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId.Value);
+
+        if (notification == null)
+        {
+            return NotFound();
+        }
+
+        _context.Notifications.Remove(notification);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     private Guid? GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
