@@ -132,6 +132,36 @@ public class NotificationsController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("settings")]
+    public async Task<IActionResult> GetNotificationSettings()
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var preferences = await _context.NotificationPreferences
+            .Where(p => p.UserId == userId.Value)
+            .Select(p => new
+            {
+                p.Id,
+                Type = p.Type.ToString(),
+                p.EmailEnabled,
+                p.PushEnabled,
+                p.InAppEnabled,
+                p.CreatedAt,
+                p.UpdatedAt
+            })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            data = preferences,
+            totalCount = preferences.Count
+        });
+    }
+
     private Guid? GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
