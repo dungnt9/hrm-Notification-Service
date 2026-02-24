@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Data;
+using NotificationService.Domain.Entities;
 using System.Security.Claims;
 
 namespace NotificationService.Controllers;
@@ -162,6 +163,30 @@ public class NotificationsController : ControllerBase
         });
     }
 
+    [HttpPut("settings")]
+    public async Task<IActionResult> UpdateNotificationSettings([FromBody] UpdateNotificationSettingsRequest request)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return Unauthorized();
+
+        var preferences = await _context.NotificationPreferences
+            .Where(p => p.UserId == userId.Value)
+            .ToListAsync();
+
+        foreach (var pref in preferences)
+        {
+            pref.EmailEnabled = request.EmailNotifications;
+            pref.PushEnabled = request.PushNotifications;
+            pref.InAppEnabled = request.PushNotifications;
+            pref.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Settings updated successfully" });
+    }
+
     private Guid? GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -171,4 +196,11 @@ public class NotificationsController : ControllerBase
         }
         return null;
     }
+}
+
+public class UpdateNotificationSettingsRequest
+{
+    public bool EmailNotifications { get; set; }
+    public bool SmsNotifications { get; set; }
+    public bool PushNotifications { get; set; }
 }
